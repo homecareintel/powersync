@@ -1,13 +1,19 @@
-# yaml-language-server: $schema=https://unpkg.com/@powersync/service-sync-rules@latest/schema/sync_rules.json
-#
-# See Documentation for more information:
-# https://docs.powersync.com/usage/sync-rules
-#
-# Note that changes to this file are not watched.
-# The service needs to be restarted for changes to take effect.
-
+# Define sync rules to control which data is synced to each user
+# See the docs: https://docs.powersync.com/usage/sync-rules
 bucket_definitions:
   global:
     data:
-      - SELECT * FROM lists
-      - SELECT * FROM todos
+     - SELECT * FROM vehicle
+     - SELECT * FROM loadsheet_activity where sync = true
+     - SELECT * FROM product WHERE department = 'FUEL' AND company_id = 'co_y15610tsjbkqz5cqoic8gjla'
+     
+  by_resource:
+    parameters: SELECT token_parameters.resource_id as resource_id
+    data:
+        - SELECT * FROM loadsheet WHERE resource_id = bucket.resource_id AND status <> 'PENDING'
+        - SELECT * FROM resource_shift where resource_id = bucket.resource_id
+        
+  by_user:
+    parameters: SELECT token_parameters.user_id as user_id
+    data:
+        - SELECT * FROM order_activity WHERE user_id = bucket.user_id
